@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Shareby</string>
+    <string name="transfer_channel_name">File Transfers</string>
+    <string name="transfer_channel_description">Nearby transfer progress and results</string>
+    <string name="notification_sending_title">Sending file</string>
+    <string name="notification_receiving_title">Receiving file</string>
+    <string name="notification_send_complete">Send complete</string>
+    <string name="notification_receive_complete">Receive complete</string>
+    <string name="notification_send_failed">Send failed</string>
+    <string name="notification_receive_failed">Receive failed</string>
+    <string name="notification_progress_percent">%1$d%%</string>
+</resources>
