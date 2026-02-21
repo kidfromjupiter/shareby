@@ -17,6 +17,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    lint {
+        disable += "InvalidFragmentVersionForActivityResult"
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
