@@ -1,6 +1,7 @@
 package com.kidfromjupiter.shareby.nearby
 
 import android.content.Context
+import android.widget.Toast
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
@@ -396,6 +397,7 @@ class NearbyShareManager(
             _state.update { it.copy(transfers = it.transfers + (payloadId to completed)) }
             notificationManager.showCompleted(payloadId, completed.fileName, completed.direction)
             scheduleTransferRemoval(payloadId, completed.direction)
+            disconnectAfterSuccessfulTransfer();
         }
     }
 
@@ -424,6 +426,17 @@ class NearbyShareManager(
         connectionsClient.stopDiscovery()
     }
 
+    private fun disconnectAfterSuccessfulTransfer() {
+        val endpointId = _state.value.connectedEndpoint?.id
+        scope.launch {
+            delay(DISCONNECT_DELAY_MS)
+            if (endpointId != null) {
+                connectionsClient.disconnectFromEndpoint(endpointId)
+            }
+            _state.update { it.copy(connectedEndpoint = null) }
+            // onDisconnected will fire and call startAdvertisingIfNeeded()
+        }
+    }
 
     private fun setError(message: String) {
         _state.update { it.copy(lastError = message) }
