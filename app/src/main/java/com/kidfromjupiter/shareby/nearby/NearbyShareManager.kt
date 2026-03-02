@@ -142,7 +142,6 @@ class NearbyShareManager(
                         notificationManager.showCompleted(update.payloadId, completed.fileName, completed.direction)
                         scheduleTransferRemoval(update.payloadId, completed.direction)
                         clearPendingOutgoing()
-                        disconnectAfterSuccessfulTransfer()
                     } else {
                         finalizeIncomingFile(update.payloadId, transfer)
                     }
@@ -290,7 +289,6 @@ class NearbyShareManager(
         connectionsClient.sendPayload(endpointId, payload)
             .addOnSuccessListener {
                 clearPendingOutgoing()
-                disconnectAfterSuccessfulTransfer()
             }
             .addOnFailureListener { setError("Failed to send text: ${it.message}") }
     }
@@ -346,12 +344,10 @@ class NearbyShareManager(
             text.startsWith(TEXT_PREFIX) -> {
                 val message = text.removePrefix(TEXT_PREFIX)
                 _state.update { it.copy(receivedTexts = it.receivedTexts + message) }
-                disconnectAfterSuccessfulTransfer()
             }
 
             else -> {
                 _state.update { it.copy(receivedTexts = it.receivedTexts + text) }
-                disconnectAfterSuccessfulTransfer()
             }
         }
     }
@@ -400,7 +396,6 @@ class NearbyShareManager(
             _state.update { it.copy(transfers = it.transfers + (payloadId to completed)) }
             notificationManager.showCompleted(payloadId, completed.fileName, completed.direction)
             scheduleTransferRemoval(payloadId, completed.direction)
-            disconnectAfterSuccessfulTransfer()
         }
     }
 
@@ -429,17 +424,6 @@ class NearbyShareManager(
         connectionsClient.stopDiscovery()
     }
 
-    private fun disconnectAfterSuccessfulTransfer() {
-        val endpointId = _state.value.connectedEndpoint?.id
-        scope.launch {
-            delay(DISCONNECT_DELAY_MS)
-            if (endpointId != null) {
-                connectionsClient.disconnectFromEndpoint(endpointId)
-            }
-            _state.update { it.copy(connectedEndpoint = null) }
-            // onDisconnected will fire and call startAdvertisingIfNeeded()
-        }
-    }
 
     private fun setError(message: String) {
         _state.update { it.copy(lastError = message) }
